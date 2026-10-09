@@ -23,7 +23,7 @@ public class BulletScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //transform.position += transform.up * bulletSpeed * Time.deltaTime;
+
     }
 
     void OnCollisionEnter2D(Collision2D collision)
