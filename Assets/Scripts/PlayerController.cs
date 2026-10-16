@@ -31,6 +31,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float hitscanCooldown = 0.25f;
 
     float hitscanCooldownTimer;
+    
+    [SerializeField] LineRenderer hitscanLine;
+
 
     Camera mainCamera;
 
@@ -125,18 +128,48 @@ public class PlayerController : MonoBehaviour
 
         hitscanCooldownTimer = 0;
 
+        Vector2 origin = firePoint.position;
         Vector2 direction = firePoint.right;
 
-        RaycastHit2D hit = Physics2D.Raycast(firePoint.position, direction, hitscanDistance);
+        RaycastHit2D hit = Physics2D.Raycast(origin, direction, hitscanDistance);
 
-        Debug.DrawRay(firePoint.position, direction * hitscanDistance, Color.red, 0.5f);
+        // Draw the line from the FirePoint.
+        hitscanLine.useWorldSpace = true;
+        hitscanLine.enabled = true;
+        hitscanLine.SetPosition(0, origin);
 
         if (hit.collider != null)
         {
-            if (hit.collider.CompareTag("Enemy"))
+           hitscanLine.SetPosition(1, hit.point);
+        }  
+        else
+        {
+           hitscanLine.SetPosition(1, origin + direction * hitscanDistance);
+        }
+            
+
+        CancelInvoke(nameof(HideHitscanLine));
+        Invoke(nameof(HideHitscanLine), 0.1f);
+
+        Debug.DrawRay(origin, direction * hitscanDistance, Color.red, 0.5f);
+
+        if (hit.collider != null && hit.collider.CompareTag("Enemy"))
+        {
+            EnemyScript enemy = hit.collider.GetComponent<EnemyScript>();
+
+            if (enemy != null)
+            {
+                enemy.Damage(2);
+            }
+            else
             {
                 Destroy(hit.collider.gameObject);
             }
         }
+    }
+
+    void HideHitscanLine()
+    {
+        hitscanLine.enabled = false;
     }
 }

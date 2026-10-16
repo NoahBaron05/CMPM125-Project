@@ -30,7 +30,12 @@ public class BulletScript : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Enemy"))
         {
-            Destroy(collision.gameObject);
+            EnemyScript enemy = collision.gameObject.GetComponent<EnemyScript>();
+
+            if (enemy != null)
+            {
+                enemy.Damage(1);
+            }
         }
 
         Destroy(gameObject);
