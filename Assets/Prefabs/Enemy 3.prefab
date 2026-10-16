@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 8393078791734868590}
   - component: {fileID: 3960295984345666245}
   - component: {fileID: 4444545693915354323}
+  - component: {fileID: -9168825093167279631}
   m_Layer: 0
   m_Name: Enemy 3
   m_TagString: Enemy
@@ -181,3 +182,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyScript
   enemyHealth: 3
+  flashDuration: 0.1
+--- !u!114 &-9168825093167279631
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3538473344169418960}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 826307a3688c1f24f885fbf7ebe6dfe0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MoneyDrop
+  moneyPrefab: {fileID: 5138981809358874383, guid: a71f7b3a84f6a044cb98401333bdae17, type: 3}
