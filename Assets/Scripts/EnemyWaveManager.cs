@@ -19,7 +19,6 @@ public class EnemyWaveManager : MonoBehaviour
 
     Dictionary<GameObject, Queue<GameObject>> enemyPools = new Dictionary<GameObject, Queue<GameObject>>();
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         StartCoroutine(StartNextWave());
@@ -57,8 +56,7 @@ public class EnemyWaveManager : MonoBehaviour
 
     void SpawnEnemy()
     {
-        if (spawnPoints == null || spawnPoints.Length == 0 ||
-            enemyPrefabs == null || enemyPrefabs.Length == 0)
+        if (spawnPoints == null || spawnPoints.Length == 0 || enemyPrefabs == null || enemyPrefabs.Length == 0)
         {
             Debug.LogWarning("Assign enemy prefabs and spawn points!");
             return;
