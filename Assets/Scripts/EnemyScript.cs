@@ -19,6 +19,18 @@ public class EnemyScript : MonoBehaviour
 
     MoneyDrop moneyDrop;
 
+    [SerializeField] private float viewDistance;
+    private GameObject player;
+
+    //Enemy types
+    [SerializeField] private bool sniper;
+    [SerializeField] private bool doubleShot;
+
+    [SerializeField] GameObject enemyBulletPrefab;
+
+    [SerializeField] float bulletCooldown = 0.5f;
+    float bulletCooldownTimer;
+
     void Awake()
     {
         startingHealth = enemyHealth;
@@ -31,6 +43,16 @@ public class EnemyScript : MonoBehaviour
         }
 
         moneyDrop = GetComponent<MoneyDrop>();
+    }
+
+    private void Start()
+    {
+        player = GameObject.FindGameObjectWithTag("Player");
+    }
+
+    private void Update()
+    {
+        AIUpdate();
     }
 
     public void SetPoolInfo(EnemyWaveManager manager, GameObject prefabSource)
@@ -118,5 +140,66 @@ public class EnemyScript : MonoBehaviour
         }
 
         flashCoroutine = null;
+    }
+
+    private (Vector2 direction, RaycastHit2D hit) PlayerDetection()
+    {
+        Vector2 direction = player.transform.position - transform.position;
+        int layerMask = ~LayerMask.GetMask("Enemy");
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, viewDistance, layerMask);
+
+        if (hit.collider != null && hit.collider.CompareTag("Player")) 
+        {
+            Debug.DrawRay(transform.position, direction, Color.red);
+            return (direction, hit);
+        }
+        return (Vector2.zero, hit);
+    }
+
+    private void AIUpdate()
+    {
+        if (sniper) SniperAI();
+        if (doubleShot) DoubleShotAI();
+    }
+
+    private void SniperAI()
+    {
+        var (direction, hit) = PlayerDetection();
+
+        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;
+
+        bulletCooldownTimer += Time.deltaTime;
+
+        if (bulletCooldownTimer > bulletCooldown && hit.collider != null && hit.collider.CompareTag("Player"))
+        {
+            bulletCooldownTimer = 0;
+
+            Instantiate(enemyBulletPrefab, this.transform.position, Quaternion.Euler(0, 0, angle));
+        }
+    }
+
+    private void DoubleShotAI()
+    {
+        var (direction, hit) = PlayerDetection();
+
+        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;
+
+        bulletCooldownTimer += Time.deltaTime;
+
+        if (bulletCooldownTimer > bulletCooldown && hit.collider != null && hit.collider.CompareTag("Player"))
+        {
+            bulletCooldownTimer = 0;
+
+            StartCoroutine(DoubleShotAttack(enemyBulletPrefab, this.transform.position, Quaternion.Euler(0, 0, angle)));
+        }
+    }
+
+    IEnumerator DoubleShotAttack(GameObject enemyBulletPrefab, Vector2 position, Quaternion angle)
+    {
+        for (int i = 0; i < 2; i++)
+        {
+            Instantiate(enemyBulletPrefab, position, angle);
+            yield return new WaitForSeconds(0.08f);
+        }
     }
 }

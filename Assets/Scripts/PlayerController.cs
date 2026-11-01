@@ -17,6 +17,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float groundCheckRadius = 0.2f;
     [SerializeField] LayerMask groundLayer;
 
+    [SerializeField] float fallMultiplier = 2.5f;
+    [SerializeField] float lowJumpMultiplier = 2f;
+
     // Gun controls
     InputAction fireAction;
     InputAction fireAction2;
@@ -31,6 +34,7 @@ public class PlayerController : MonoBehaviour
     float hitscanCooldownTimer;
 
     [SerializeField] LineRenderer hitscanLine;
+    [SerializeField] private LayerMask layersToHit;
 
     // Aim line
     [SerializeField] LineRenderer aimLine;
@@ -41,6 +45,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] Image brightnessOverlay;
 
     [SerializeField] int playerHealth;
+
+    [SerializeField] PlayerHUD playerHUD;
 
     void Start()
     {
@@ -62,6 +68,11 @@ public class PlayerController : MonoBehaviour
         {
             SettingsManager.Instance.SetBrightnessOverlay(brightnessOverlay);
         }
+
+        if (playerHUD != null)
+        {
+            playerHUD.UpdateHealth(playerHealth);
+        }
     }
 
     void Update()
@@ -77,62 +88,54 @@ public class PlayerController : MonoBehaviour
     {
         float moveValue = moveAction.ReadValue<float>();
 
-        player.linearVelocity = new Vector2(
-            moveValue * moveSpeed,
-            player.linearVelocity.y
-        );
+        player.linearVelocity = new Vector2(moveValue * moveSpeed, player.linearVelocity.y);
 
         JumpLogic();
+        Fall();
     }
 
     void JumpLogic()
     {
         if (jumpAction.WasPressedThisFrame() && isGrounded())
         {
-            player.AddForce(
-                transform.up * jumpPower,
-                ForceMode2D.Impulse
-            );
+            player.AddForce(transform.up * jumpPower, ForceMode2D.Impulse);
+        }
+    }
+
+    void Fall()
+    {
+        if (player.linearVelocity.y < 0)
+        {
+            player.linearVelocity += Vector2.up * Physics2D.gravity.y * (fallMultiplier) * Time.deltaTime;
+        }
+        else if (player.linearVelocity.y > 0 && !jumpAction.IsPressed())
+        {
+            player.linearVelocity += Vector2.up * Physics2D.gravity.y * (lowJumpMultiplier) * Time.deltaTime;
         }
     }
 
     bool isGrounded()
     {
-        return Physics2D.OverlapCircle(
-            groundCheck.position,
-            groundCheckRadius,
-            groundLayer
-        );
+        return Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
     }
 
     void BulletLogic()
     {
         bulletCooldownTimer += Time.deltaTime;
 
-        if (fireAction.WasPressedThisFrame() &&
-            bulletCooldownTimer > bulletCooldown)
+        if (fireAction.WasPressedThisFrame() && bulletCooldownTimer > bulletCooldown)
         {
             bulletCooldownTimer = 0;
 
-            Vector3 mousePosition =
-                mainCamera.ScreenToWorldPoint(
-                    Mouse.current.position.ReadValue()
-                );
+            Vector3 mousePosition = mainCamera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
 
             mousePosition.z = 0;
 
-            Vector2 direction =
-                (mousePosition - firePoint.position).normalized;
+            Vector2 direction = (mousePosition - firePoint.position).normalized;
 
-            float angle =
-                Mathf.Atan2(direction.y, direction.x) *
-                Mathf.Rad2Deg - 90f;
+            float angle =Mathf.Atan2(direction.y, direction.x) *Mathf.Rad2Deg - 90f;
 
-            Instantiate(
-                bulletPrefab,
-                firePoint.position,
-                Quaternion.Euler(0, 0, angle)
-            );
+            Instantiate(bulletPrefab, firePoint.position,Quaternion.Euler(0, 0, angle));
         }
     }
 
@@ -141,23 +144,18 @@ public class PlayerController : MonoBehaviour
         if (Mouse.current == null)
             return;
 
-        Vector3 mousePosition =
-            mainCamera.ScreenToWorldPoint(
-                Mouse.current.position.ReadValue()
-            );
+        Vector3 mousePosition =mainCamera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
 
         mousePosition.z = 0;
 
         Vector2 direction = mousePosition - transform.position;
         direction.Normalize();
 
-        float angle =
-            Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
 
         float radius = 1f;
 
-        firePoint.position =
-            transform.position + (Vector3)(direction * radius);
+        firePoint.position = transform.position + (Vector3)(direction * radius);
 
         firePoint.rotation = Quaternion.Euler(0, 0, angle);
     }
@@ -166,8 +164,7 @@ public class PlayerController : MonoBehaviour
     {
         hitscanCooldownTimer += Time.deltaTime;
 
-        if (!fireAction2.WasPressedThisFrame() ||
-            hitscanCooldownTimer < hitscanCooldown)
+        if (!fireAction2.WasPressedThisFrame() || hitscanCooldownTimer < hitscanCooldown)
         {
             return;
         }
@@ -177,9 +174,7 @@ public class PlayerController : MonoBehaviour
         Vector2 origin = firePoint.position;
         Vector2 direction = firePoint.right;
 
-        RaycastHit2D hit = Physics2D.Raycast(
-            origin, direction, hitscanDistance
-        );
+        RaycastHit2D hit = Physics2D.Raycast(origin, direction, hitscanDistance, ~layersToHit);
 
         if (hitscanLine == null)
             return;
@@ -194,17 +189,13 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            hitscanLine.SetPosition(
-                1, origin + direction * hitscanDistance
-            );
+            hitscanLine.SetPosition(1, origin + direction * hitscanDistance);
         }
 
         CancelInvoke(nameof(HideHitscanLine));
         Invoke(nameof(HideHitscanLine), 0.1f);
 
-        Debug.DrawRay(
-            origin, direction * hitscanDistance, Color.red, 0.5f
-        );
+        Debug.DrawRay(origin, direction * hitscanDistance, Color.red, 0.5f);
 
         if (hit.collider != null &&
             hit.collider.CompareTag("Enemy"))
@@ -247,9 +238,7 @@ public class PlayerController : MonoBehaviour
         Vector2 direction = firePoint.right;
 
         aimLine.SetPosition(0, origin);
-        aimLine.SetPosition(
-            1, origin + direction * aimLineDistance
-        );
+        aimLine.SetPosition(1, origin + direction * aimLineDistance);
     }
 
     void OnCollisionEnter2D(Collision2D collision)
@@ -260,11 +249,18 @@ public class PlayerController : MonoBehaviour
 
             PlayerDamage();
         }
+
+        if (collision.gameObject.CompareTag("EnemyBullet"))
+        {
+            PlayerDamage();
+        }
     }
 
     void PlayerDamage()
     {
         playerHealth -= 1;
+
+        playerHUD.UpdateHealth(playerHealth);
 
         if (playerHealth <= 0)
         {

@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 6603408516531553309}
   - component: {fileID: -7192325684202001905}
   - component: {fileID: 4828954181559433846}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Enemy
   m_TagString: Enemy
   m_Icon: {fileID: 0}
@@ -183,6 +183,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyScript
   enemyHealth: 1
   flashDuration: 0.1
+  viewDistance: 22
+  player: {fileID: 0}
 --- !u!114 &4828954181559433846
 MonoBehaviour:
   m_ObjectHideFlags: 0

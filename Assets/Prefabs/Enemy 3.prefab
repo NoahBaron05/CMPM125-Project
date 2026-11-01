@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 3960295984345666245}
   - component: {fileID: 4444545693915354323}
   - component: {fileID: -9168825093167279631}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Enemy 3
   m_TagString: Enemy
   m_Icon: {fileID: 0}
@@ -183,6 +183,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyScript
   enemyHealth: 3
   flashDuration: 0.1
+  viewDistance: 22
+  sniper: 1
+  enemyBulletPrefab: {fileID: 3908613099615250263, guid: 1985367f4ed2bc64e8ae031aae719ecd, type: 3}
+  bulletCooldown: 1.5
 --- !u!114 &-9168825093167279631
 MonoBehaviour:
   m_ObjectHideFlags: 0
